@@ -13,7 +13,7 @@ $setupUrl = "https://raw.githubusercontent.com/Anmol-sudo/powerbi-office-automat
 # 2. Create the 'office' folder on Desktop
 if (!(Test-Path $workDir)) {
     New-Item -ItemType Directory -Path $workDir
-    Write-Host "Created folder at $workDir" -ForegroundColor Green
+    Write-Host "Created folder at $workDir" -ForegroundColor Blue
 }
 Set-Location $workDir
 
