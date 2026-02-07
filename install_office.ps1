@@ -1,33 +1,33 @@
 # Check for Administrative privileges
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Error "Please run this script as an Administrator."
+    Write-Host "Please run this PowerShell window as Administrator!" -ForegroundColor Red
     exit
 }
 
-# 1. Define variables
-$workDir = "C:\Office2024"
-$xmlUrl = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/configuration.xml"
-$odtUrl = "https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_17328-20162.exe"
+# 1. Define Paths and Raw GitHub URLs
+$desktopPath = [System.IO.Path]::Combine($env:USERPROFILE, "Desktop")
+$workDir = Join-Path $desktopPath "office"
+$xmlUrl = "https://raw.githubusercontent.com/Anmol-sudo/powerbi-office-automate-install/main/configuration.xml"
+$setupUrl = "https://raw.githubusercontent.com/Anmol-sudo/powerbi-office-automate-install/main/setup.exe"
 
-# 2. Setup Environment
-if (!(Test-Path $workDir)) { New-Item -ItemType Directory -Path $workDir }
+# 2. Create the 'office' folder on Desktop
+if (!(Test-Path $workDir)) {
+    New-Item -ItemType Directory -Path $workDir
+    Write-Host "Created folder at $workDir" -ForegroundColor Green
+}
 Set-Location $workDir
 
-# 3. Install Power BI via Winget
-Write-Host "--- Installing Power BI Desktop ---" -ForegroundColor Cyan
-winget install --id Microsoft.PowerBIDesktop --silent --accept-source-agreements --accept-package-agreements
-
-# 4. Download Office Deployment Files
-Write-Host "--- Downloading Office Deployment Files ---" -ForegroundColor Cyan
-Invoke-WebRequest -Uri $odtUrl -OutFile "$workDir\odt.exe"
+# 3. Download files from GitHub
+Write-Host "Downloading configuration and setup files..." -ForegroundColor Cyan
 Invoke-WebRequest -Uri $xmlUrl -OutFile "$workDir\configuration.xml"
+Invoke-WebRequest -Uri $setupUrl -OutFile "$workDir\setup.exe"
 
-# 5. Extract and Install Office 2024
-Write-Host "--- Extracting ODT ---" -ForegroundColor Cyan
-Start-Process -FilePath "$workDir\odt.exe" -ArgumentList "/extract:$workDir /quiet" -Wait
-
-Write-Host "--- Starting Office 2024 Installation ---" -ForegroundColor Gold
-Write-Host "This will run in the background. Please wait..." -ForegroundColor Gray
+# 4. Run Office Installation
+Write-Host "Starting Office 2024 Installation..." -ForegroundColor Gold
 Start-Process -FilePath "$workDir\setup.exe" -ArgumentList "/configure configuration.xml" -Wait
 
-Write-Host "--- All tasks completed successfully! ---" -ForegroundColor Green
+# 5. Install Power BI via Winget
+Write-Host "Installing Power BI Desktop..." -ForegroundColor Cyan
+winget install --id Microsoft.PowerBIDesktop --silent --accept-source-agreements --accept-package-agreements
+
+Write-Host "All tasks completed!" -ForegroundColor Green
